@@ -114,6 +114,13 @@
             <version>${hutool.version}</version>
         </dependency>
 
+        <!-- 智谱AI官方SDK -->
+        <dependency>
+            <groupId>ai.z.openapi</groupId>
+            <artifactId>zai-sdk</artifactId>
+            <version>0.3.0</version>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
