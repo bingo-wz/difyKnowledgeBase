@@ -19,17 +19,17 @@
 
 /* 亮色主题变量 */
 [data-theme="light"] {
-  --primary-color: #4f46e5;
-  --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --primary-color: #6366f1;
+  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   --bg-dark: #f5f7fa;
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
-  --bg-status: rgba(79, 70, 229, 0.05);
+  --bg-status: rgba(99, 102, 241, 0.06);
   --text-primary: #1a1a2e;
   --text-secondary: #6b7280;
   --border-color: #e5e7eb;
   --shadow-color: rgba(0, 0, 0, 0.08);
-  --menu-active-bg: rgba(79, 70, 229, 0.1);
+  --menu-active-bg: rgba(99, 102, 241, 0.12);
   --menu-active-text: var(--primary-color);
 }
 
@@ -149,6 +149,22 @@ body {
 
 .el-tag {
   border: none !important;
+}
+
+/* 暗色主题下 tag 样式优化 */
+[data-theme="dark"] .el-tag--success {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+}
+
+[data-theme="dark"] .el-tag--danger {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+}
+
+[data-theme="dark"] .el-tag--warning {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
 }
 
 /* 文本按钮优化 */
