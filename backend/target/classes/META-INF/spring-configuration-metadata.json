@@ -1,0 +1,48 @@
+{
+  "groups": [
+    {
+      "name": "zhipu",
+      "type": "com.kb.config.ZhipuConfig",
+      "sourceType": "com.kb.config.ZhipuConfig"
+    },
+    {
+      "name": "zhipu.models",
+      "type": "com.kb.config.ZhipuConfig$Models",
+      "sourceType": "com.kb.config.ZhipuConfig",
+      "sourceMethod": "public com.kb.config.ZhipuConfig.Models getModels() "
+    }
+  ],
+  "properties": [
+    {
+      "name": "zhipu.api-key",
+      "type": "java.lang.String",
+      "description": "API密钥",
+      "sourceType": "com.kb.config.ZhipuConfig"
+    },
+    {
+      "name": "zhipu.base-url",
+      "type": "java.lang.String",
+      "description": "API基础URL",
+      "sourceType": "com.kb.config.ZhipuConfig"
+    },
+    {
+      "name": "zhipu.models.chat",
+      "type": "java.lang.String",
+      "description": "对话模型",
+      "sourceType": "com.kb.config.ZhipuConfig$Models"
+    },
+    {
+      "name": "zhipu.models.embedding",
+      "type": "java.lang.String",
+      "description": "嵌入模型",
+      "sourceType": "com.kb.config.ZhipuConfig$Models"
+    },
+    {
+      "name": "zhipu.models.vision",
+      "type": "java.lang.String",
+      "description": "视觉模型",
+      "sourceType": "com.kb.config.ZhipuConfig$Models"
+    }
+  ],
+  "hints": []
+}

@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # ==================== 基础服务 ====================
+  
+  # MinIO - 文件存储
+  minio:
+    image: minio/minio:latest
+    container_name: kb-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123456
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - kb-network
+
+  # MySQL - 元数据存储
+  mysql:
+    image: mysql:8.0
+    container_name: kb-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: knowledge_base
+      MYSQL_USER: kb_user
+      MYSQL_PASSWORD: kb123456
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kb-network
+
+  # Redis - 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: kb-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kb-network
+
+  # Qdrant - 向量数据库
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: kb-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    networks:
+      - kb-network
+
+  # ==================== Dify服务 ====================
+  # 注意：Dify有完整的docker-compose，这里只是示意
+  # 建议使用官方的 docker-compose 文件部署Dify
+  # https://github.com/langgenius/dify/blob/main/docker/docker-compose.yaml
+
+volumes:
+  minio-data:
+    driver: local
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
+  qdrant-data:
+    driver: local
+
+networks:
+  kb-network:
+    driver: bridge
