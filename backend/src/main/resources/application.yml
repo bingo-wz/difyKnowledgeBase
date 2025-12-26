@@ -50,8 +50,8 @@ minio:
 
 # Dify配置
 dify:
-  base-url: http://localhost:80/v1
-  api-key: ${DIFY_API_KEY:your-dify-api-key}
+  base-url: http://localhost/v1
+  api-key: dataset-G3sgBB49Nsen8wDeP4BcVQjV
 
 # 智谱AI配置
 zhipu:
