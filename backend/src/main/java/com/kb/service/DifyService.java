@@ -34,6 +34,13 @@ public class DifyService {
     private final VisionService visionService;
 
     /**
+     * 获取DifyClient
+     */
+    public DifyClient getDifyClient() {
+        return difyClient;
+    }
+
+    /**
      * 创建知识库（同时创建Dify知识库）
      */
     @Transactional
