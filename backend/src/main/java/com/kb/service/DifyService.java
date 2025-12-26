@@ -41,6 +41,16 @@ public class DifyService {
     }
 
     /**
+     * 根据知识库ID获取文档列表
+     */
+    public List<Document> getDocumentsByKbId(Long kbId) {
+        return documentMapper.selectList(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Document>()
+                        .eq(Document::getKbId, kbId)
+                        .orderByDesc(Document::getCreateTime));
+    }
+
+    /**
      * 创建知识库（同时创建Dify知识库）
      */
     @Transactional

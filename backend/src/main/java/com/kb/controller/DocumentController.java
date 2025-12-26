@@ -1,7 +1,6 @@
 package com.kb.controller;
 
 import com.kb.entity.Document;
-import com.kb.entity.KnowledgeBase;
 import com.kb.service.DifyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +25,22 @@ import java.util.Map;
 public class DocumentController {
 
     private final DifyService difyService;
+
+    @GetMapping("/list")
+    @Operation(summary = "获取文档列表", description = "获取指定知识库下的所有文档")
+    public ResponseEntity<Map<String, Object>> listDocuments(@RequestParam Long kbId) {
+        log.info("获取文档列表: kbId={}", kbId);
+
+        List<Document> documents = difyService.getDocumentsByKbId(kbId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("data", Map.of(
+                "total", documents.size(),
+                "records", documents));
+
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping("/upload")
     @Operation(summary = "上传文档", description = "上传文档到知识库，自动索引到Dify")

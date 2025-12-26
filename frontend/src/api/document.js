@@ -17,6 +17,15 @@ export function uploadDocument(kbId, file, onProgress) {
     })
 }
 
+// 获取文档列表
+export function getDocumentList(kbId) {
+    return request({
+        url: '/document/list',
+        method: 'get',
+        params: { kbId }
+    })
+}
+
 // 删除文档
 export function deleteDocument(id) {
     return request({

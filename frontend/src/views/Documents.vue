@@ -99,9 +99,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Upload, Delete, Document, UploadFilled } from '@element-plus/icons-vue'
-import { deleteDocument } from '@/api/document'
+import { deleteDocument, getDocumentList } from '@/api/document'
 import { getKnowledgeBaseList } from '@/api/knowledge'
-import request from '@/api/index'
 
 const route = useRoute()
 const router = useRouter()
@@ -125,9 +124,11 @@ const fetchData = async () => {
       knowledgeBase.value = kbRes.data?.records?.find(kb => kb.id == kbId.value)
     }
     
-    // 获取文档列表（从知识库信息中或单独的接口）
-    // 这里暂时使用模拟数据，实际需要后端提供文档列表接口
-    documents.value = knowledgeBase.value?.documents || []
+    // 获取文档列表
+    const docRes = await getDocumentList(kbId.value)
+    if (docRes.success) {
+      documents.value = docRes.data?.records || []
+    }
   } catch (e) {
     console.error('获取数据失败', e)
   } finally {
