@@ -45,7 +45,9 @@
               <Moon v-else />
             </el-icon>
           </div>
-          <el-button :icon="Refresh" circle @click="refresh" />
+          <div class="action-btn" @click="refresh" title="刷新页面">
+            <el-icon :size="18"><Refresh /></el-icon>
+          </div>
         </div>
       </el-header>
 
@@ -174,6 +176,22 @@ const refresh = () => {
 }
 
 .theme-toggle:hover {
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--primary-color);
+}
+
+.action-btn {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.action-btn:hover {
   background: rgba(79, 70, 229, 0.1);
   color: var(--primary-color);
 }

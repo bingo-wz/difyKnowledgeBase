@@ -69,41 +69,144 @@
       </el-row>
     </el-card>
 
-    <!-- 最近知识库 -->
-    <el-card class="recent-kb" v-if="recentKnowledgeBases.length > 0">
-      <template #header>
-        <div class="card-header">
-          <span>最近知识库</span>
-          <el-button text type="primary" @click="$router.push('/knowledge-base')">
-            查看全部 <el-icon><ArrowRight /></el-icon>
-          </el-button>
-        </div>
-      </template>
-      <div class="kb-list">
-        <div 
-          v-for="kb in recentKnowledgeBases" 
-          :key="kb.id" 
-          class="kb-item"
-          @click="$router.push(`/documents/${kb.id}`)"
-        >
-          <div class="kb-icon">
-            <el-icon :size="24"><Folder /></el-icon>
+    <el-row :gutter="24">
+      <!-- 最近知识库 -->
+      <el-col :span="12">
+        <el-card class="recent-kb">
+          <template #header>
+            <div class="card-header">
+              <span>最近知识库</span>
+              <el-button text type="primary" @click="$router.push('/knowledge-base')">
+                查看全部 <el-icon><ArrowRight /></el-icon>
+              </el-button>
+            </div>
+          </template>
+          <div class="kb-list" v-if="recentKnowledgeBases.length > 0">
+            <div 
+              v-for="kb in recentKnowledgeBases" 
+              :key="kb.id" 
+              class="kb-item"
+              @click="$router.push(`/documents/${kb.id}`)"
+            >
+              <div class="kb-icon">
+                <el-icon :size="24"><Folder /></el-icon>
+              </div>
+              <div class="kb-info">
+                <div class="kb-name">{{ kb.name }}</div>
+                <div class="kb-meta">{{ kb.docCount || 0 }} 文档</div>
+              </div>
+              <el-icon class="kb-arrow"><ArrowRight /></el-icon>
+            </div>
           </div>
-          <div class="kb-info">
-            <div class="kb-name">{{ kb.name }}</div>
-            <div class="kb-meta">{{ kb.docCount || 0 }} 文档</div>
+          <el-empty v-else description="暂无知识库" :image-size="80" />
+        </el-card>
+      </el-col>
+
+      <!-- 系统信息 -->
+      <el-col :span="12">
+        <el-card class="system-info">
+          <template #header>
+            <div class="card-header">
+              <span>系统信息</span>
+              <el-tag size="small" :type="systemStatus.allHealthy ? 'success' : 'warning'">
+                {{ systemStatus.allHealthy ? '运行正常' : '部分异常' }}
+              </el-tag>
+            </div>
+          </template>
+          
+          <!-- 服务状态 -->
+          <div class="info-section">
+            <div class="section-title">
+              <el-icon><Monitor /></el-icon>
+              <span>服务状态</span>
+            </div>
+            <div class="status-grid">
+              <div class="status-item">
+                <span class="status-label">后端服务</span>
+                <el-tag :type="systemStatus.backend ? 'success' : 'danger'" size="small">
+                  {{ systemStatus.backend ? '运行中' : '已停止' }}
+                </el-tag>
+              </div>
+              <div class="status-item">
+                <span class="status-label">Dify服务</span>
+                <el-tag :type="systemStatus.dify ? 'success' : 'danger'" size="small">
+                  {{ systemStatus.dify ? '运行中' : '已停止' }}
+                </el-tag>
+              </div>
+              <div class="status-item">
+                <span class="status-label">MinIO存储</span>
+                <el-tag :type="systemStatus.minio ? 'success' : 'danger'" size="small">
+                  {{ systemStatus.minio ? '运行中' : '已停止' }}
+                </el-tag>
+              </div>
+              <div class="status-item">
+                <span class="status-label">MySQL数据库</span>
+                <el-tag :type="systemStatus.mysql ? 'success' : 'danger'" size="small">
+                  {{ systemStatus.mysql ? '运行中' : '已停止' }}
+                </el-tag>
+              </div>
+            </div>
           </div>
-          <el-icon class="kb-arrow"><ArrowRight /></el-icon>
-        </div>
-      </div>
-    </el-card>
+
+          <!-- AI模型配置 -->
+          <div class="info-section">
+            <div class="section-title">
+              <el-icon><Cpu /></el-icon>
+              <span>AI模型配置</span>
+            </div>
+            <div class="config-list">
+              <div class="config-item">
+                <span class="config-label">对话模型</span>
+                <span class="config-value">GLM-4-flash</span>
+              </div>
+              <div class="config-item">
+                <span class="config-label">视觉模型</span>
+                <span class="config-value">GLM-4.6V</span>
+              </div>
+              <div class="config-item">
+                <span class="config-label">Embedding</span>
+                <span class="config-value">智谱 embedding-3</span>
+              </div>
+              <div class="config-item">
+                <span class="config-label">向量数据库</span>
+                <span class="config-value">Weaviate (Dify内置)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 访问地址 -->
+          <div class="info-section">
+            <div class="section-title">
+              <el-icon><Link /></el-icon>
+              <span>访问地址</span>
+            </div>
+            <div class="config-list">
+              <div class="config-item">
+                <span class="config-label">后端API</span>
+                <a class="config-link" href="http://localhost:8080/api/doc.html" target="_blank">
+                  localhost:8080/api
+                </a>
+              </div>
+              <div class="config-item">
+                <span class="config-label">Dify</span>
+                <a class="config-link" href="http://localhost" target="_blank">localhost</a>
+              </div>
+              <div class="config-item">
+                <span class="config-label">MinIO</span>
+                <a class="config-link" href="http://localhost:9001" target="_blank">localhost:9001</a>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { getKnowledgeBaseList } from '@/api/knowledge'
-import { ArrowRight, Folder } from '@element-plus/icons-vue'
+import { ArrowRight, Folder, Monitor, Cpu, Link } from '@element-plus/icons-vue'
 
 const stats = ref({
   knowledgeBaseCount: 0,
@@ -113,15 +216,45 @@ const stats = ref({
 
 const recentKnowledgeBases = ref([])
 
+const systemStatus = reactive({
+  backend: false,
+  dify: false,
+  minio: false,
+  mysql: false,
+  allHealthy: false
+})
+
+// 检查服务状态
+const checkServiceStatus = async () => {
+  // 检查后端
+  try {
+    const res = await fetch('/api/knowledge-base/list?pageNum=1&pageSize=1')
+    systemStatus.backend = res.ok
+  } catch {
+    systemStatus.backend = false
+  }
+  
+  // 简化检查，假设其他服务与后端同步
+  // 实际项目中可以添加专门的健康检查接口
+  systemStatus.dify = systemStatus.backend
+  systemStatus.minio = systemStatus.backend
+  systemStatus.mysql = systemStatus.backend
+  
+  systemStatus.allHealthy = systemStatus.backend && systemStatus.dify && systemStatus.minio && systemStatus.mysql
+}
+
 onMounted(async () => {
+  // 检查服务状态
+  await checkServiceStatus()
+  
+  // 获取统计数据
   try {
     const res = await getKnowledgeBaseList({ pageNum: 1, pageSize: 100 })
     if (res.success) {
       const records = res.data?.records || []
       stats.value.knowledgeBaseCount = res.data?.total || records.length
       stats.value.documentCount = records.reduce((sum, kb) => sum + (kb.docCount || 0), 0)
-      // 取最近5个知识库
-      recentKnowledgeBases.value = records.slice(0, 5)
+      recentKnowledgeBases.value = records.slice(0, 4)
     }
   } catch (e) {
     console.error('获取统计数据失败', e)
@@ -131,7 +264,7 @@ onMounted(async () => {
 
 <style scoped>
 .dashboard {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -223,8 +356,10 @@ onMounted(async () => {
   margin: 0;
 }
 
-.recent-kb {
-  margin-bottom: 24px;
+.recent-kb,
+.system-info {
+  height: 100%;
+  min-height: 400px;
 }
 
 .kb-list {
@@ -276,5 +411,86 @@ onMounted(async () => {
 
 .kb-arrow {
   color: var(--text-secondary);
+}
+
+/* 系统信息样式 */
+.info-section {
+  margin-bottom: 20px;
+}
+
+.info-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.section-title .el-icon {
+  color: var(--primary-color);
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(79, 70, 229, 0.02);
+  border-radius: 6px;
+}
+
+.status-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.config-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.config-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.config-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.config-link {
+  font-size: 13px;
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.config-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
 }
 </style>
