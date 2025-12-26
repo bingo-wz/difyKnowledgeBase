@@ -167,13 +167,10 @@ body {
   color: #fbbf24 !important;
 }
 
-/* 文本按钮优化 */
-.el-button--text {
+/* 文本按钮基础优化 - 仅处理颜色 */
+.el-button.is-text {
   color: var(--primary-color) !important;
-}
-
-.el-button--text:hover {
-  background: rgba(79, 70, 229, 0.1) !important;
+  background: transparent !important;
 }
 
 .el-empty__description {

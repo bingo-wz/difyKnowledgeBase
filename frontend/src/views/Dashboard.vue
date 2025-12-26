@@ -76,9 +76,9 @@
           <template #header>
             <div class="card-header">
               <span>最近知识库</span>
-              <el-button text type="primary" @click="$router.push('/knowledge-base')">
+              <a class="view-all-link" @click="$router.push('/knowledge-base')">
                 查看全部 <el-icon><ArrowRight /></el-icon>
-              </el-button>
+              </a>
             </div>
           </template>
           <div class="kb-list" v-if="recentKnowledgeBases.length > 0">
@@ -321,6 +321,22 @@ onMounted(async () => {
   align-items: center;
   color: var(--text-primary);
   font-weight: 600;
+}
+
+.view-all-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.view-all-link:hover {
+  opacity: 0.8;
 }
 
 .action-card {
