@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kb.entity.KnowledgeBase;
 import com.kb.mapper.KnowledgeBaseMapper;
+import com.kb.service.DifyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -25,20 +26,23 @@ import java.util.Map;
 public class KnowledgeBaseController {
 
     private final KnowledgeBaseMapper knowledgeBaseMapper;
+    private final DifyService difyService;
 
     @PostMapping
-    @Operation(summary = "创建知识库")
-    public ResponseEntity<Map<String, Object>> create(@RequestBody KnowledgeBase knowledgeBase) {
-        log.info("创建知识库: {}", knowledgeBase.getName());
+    @Operation(summary = "创建知识库", description = "创建知识库并同步到Dify")
+    public ResponseEntity<Map<String, Object>> create(@RequestBody Map<String, Object> request) {
+        String name = (String) request.get("name");
+        String description = (String) request.getOrDefault("description", "");
+        Long userId = request.containsKey("userId") ? Long.valueOf(request.get("userId").toString()) : 1L;
 
-        knowledgeBase.setDocCount(0);
-        knowledgeBase.setStatus(1);
-        knowledgeBaseMapper.insert(knowledgeBase);
+        log.info("创建知识库: {}", name);
+
+        KnowledgeBase kb = difyService.createKnowledgeBase(name, description, userId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("message", "知识库创建成功");
-        response.put("data", knowledgeBase);
+        response.put("data", kb);
 
         return ResponseEntity.ok(response);
     }
@@ -99,11 +103,11 @@ public class KnowledgeBaseController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "删除知识库")
+    @Operation(summary = "删除知识库", description = "删除知识库并同步删除Dify")
     public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
         log.info("删除知识库: {}", id);
 
-        knowledgeBaseMapper.deleteById(id);
+        difyService.deleteKnowledgeBase(id);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
