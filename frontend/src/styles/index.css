@@ -8,10 +8,13 @@
   --bg-dark: #0f0f1a;
   --bg-card: rgba(30, 30, 50, 0.8);
   --bg-sidebar: #1a1a2e;
+  --bg-status: rgba(79, 70, 229, 0.08);
   --text-primary: #ffffff;
   --text-secondary: #a0a0b0;
   --border-color: rgba(255, 255, 255, 0.1);
   --shadow-color: rgba(0, 0, 0, 0.3);
+  --menu-active-bg: var(--primary-gradient);
+  --menu-active-text: #ffffff;
 }
 
 /* 亮色主题变量 */
@@ -21,10 +24,13 @@
   --bg-dark: #f5f7fa;
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
+  --bg-status: rgba(79, 70, 229, 0.05);
   --text-primary: #1a1a2e;
   --text-secondary: #6b7280;
   --border-color: #e5e7eb;
   --shadow-color: rgba(0, 0, 0, 0.08);
+  --menu-active-bg: rgba(79, 70, 229, 0.1);
+  --menu-active-text: var(--primary-color);
 }
 
 * {
@@ -56,10 +62,14 @@ body {
   transition: all 0.3s;
 }
 
-.el-menu-item:hover,
+.el-menu-item:hover {
+  background: rgba(79, 70, 229, 0.1) !important;
+  color: var(--primary-color) !important;
+}
+
 .el-menu-item.is-active {
-  background: var(--primary-gradient) !important;
-  color: #ffffff !important;
+  background: var(--menu-active-bg) !important;
+  color: var(--menu-active-text) !important;
 }
 
 .el-card {
@@ -139,6 +149,15 @@ body {
 
 .el-tag {
   border: none !important;
+}
+
+/* 文本按钮优化 */
+.el-button--text {
+  color: var(--primary-color) !important;
+}
+
+.el-button--text:hover {
+  background: rgba(79, 70, 229, 0.1) !important;
 }
 
 .el-empty__description {

@@ -449,8 +449,9 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: rgba(79, 70, 229, 0.02);
+  background: var(--bg-status);
   border-radius: 6px;
+  border: 1px solid var(--border-color);
 }
 
 .status-label {
