@@ -14,11 +14,11 @@ spring:
     password: root123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   
-  # Redis配置
+  # Redis配置 (使用6380端口避免与Dify冲突)
   data:
     redis:
       host: localhost
-      port: 6379
+      port: 6380
       database: 0
   
   # 文件上传配置

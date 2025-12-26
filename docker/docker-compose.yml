@@ -1,3 +1,5 @@
+name: knowledge-base
+
 services:
   # ==================== 基础服务 ====================
 
@@ -46,12 +48,12 @@ services:
     networks:
       - kb-network
 
-  # Redis - 缓存
+  # Redis - 缓存 (使用6380端口避免与Dify冲突)
   redis:
     image: redis:7-alpine
     container_name: kb-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
