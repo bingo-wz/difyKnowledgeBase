@@ -40,45 +40,62 @@
     <!-- 快速入口 -->
     <el-card class="quick-actions">
       <template #header>
-        <span>快速开始</span>
+        <div class="card-header">
+          <span>快速开始</span>
+        </div>
       </template>
       <el-row :gutter="16">
         <el-col :span="8">
           <div class="action-card" @click="$router.push('/knowledge-base')">
             <el-icon :size="48" color="#4f46e5"><FolderAdd /></el-icon>
             <span>创建知识库</span>
+            <p>新建一个知识库来存储文档</p>
           </div>
         </el-col>
         <el-col :span="8">
           <div class="action-card" @click="$router.push('/knowledge-base')">
             <el-icon :size="48" color="#06b6d4"><Upload /></el-icon>
             <span>上传文档</span>
+            <p>支持PDF、Word、图片等格式</p>
           </div>
         </el-col>
         <el-col :span="8">
           <div class="action-card" @click="$router.push('/chat')">
             <el-icon :size="48" color="#10b981"><ChatLineRound /></el-icon>
             <span>开始对话</span>
+            <p>基于知识库的智能问答</p>
           </div>
         </el-col>
       </el-row>
     </el-card>
 
-    <!-- 系统信息 -->
-    <el-card class="system-info">
+    <!-- 最近知识库 -->
+    <el-card class="recent-kb" v-if="recentKnowledgeBases.length > 0">
       <template #header>
-        <span>系统信息</span>
+        <div class="card-header">
+          <span>最近知识库</span>
+          <el-button text type="primary" @click="$router.push('/knowledge-base')">
+            查看全部 <el-icon><ArrowRight /></el-icon>
+          </el-button>
+        </div>
       </template>
-      <el-descriptions :column="2" border>
-        <el-descriptions-item label="后端服务">
-          <el-tag type="success">运行中</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="Dify服务">
-          <el-tag type="success">运行中</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="AI模型">GLM-4-flash</el-descriptions-item>
-        <el-descriptions-item label="Embedding">智谱 embedding-3</el-descriptions-item>
-      </el-descriptions>
+      <div class="kb-list">
+        <div 
+          v-for="kb in recentKnowledgeBases" 
+          :key="kb.id" 
+          class="kb-item"
+          @click="$router.push(`/documents/${kb.id}`)"
+        >
+          <div class="kb-icon">
+            <el-icon :size="24"><Folder /></el-icon>
+          </div>
+          <div class="kb-info">
+            <div class="kb-name">{{ kb.name }}</div>
+            <div class="kb-meta">{{ kb.docCount || 0 }} 文档</div>
+          </div>
+          <el-icon class="kb-arrow"><ArrowRight /></el-icon>
+        </div>
+      </div>
     </el-card>
   </div>
 </template>
@@ -86,6 +103,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getKnowledgeBaseList } from '@/api/knowledge'
+import { ArrowRight, Folder } from '@element-plus/icons-vue'
 
 const stats = ref({
   knowledgeBaseCount: 0,
@@ -93,14 +111,17 @@ const stats = ref({
   chatCount: 0
 })
 
+const recentKnowledgeBases = ref([])
+
 onMounted(async () => {
   try {
     const res = await getKnowledgeBaseList({ pageNum: 1, pageSize: 100 })
     if (res.success) {
-      stats.value.knowledgeBaseCount = res.data?.total || res.data?.records?.length || 0
-      // 计算总文档数
       const records = res.data?.records || []
+      stats.value.knowledgeBaseCount = res.data?.total || records.length
       stats.value.documentCount = records.reduce((sum, kb) => sum + (kb.docCount || 0), 0)
+      // 取最近5个知识库
+      recentKnowledgeBases.value = records.slice(0, 5)
     }
   } catch (e) {
     console.error('获取统计数据失败', e)
@@ -161,38 +182,99 @@ onMounted(async () => {
   margin-bottom: 24px;
 }
 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
 .action-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   padding: 32px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(79, 70, 229, 0.03);
   border: 1px dashed var(--border-color);
   cursor: pointer;
   transition: all 0.3s;
+  text-align: center;
 }
 
 .action-card:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(79, 70, 229, 0.08);
   border-color: var(--primary-color);
   transform: translateY(-4px);
 }
 
 .action-card span {
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.action-card p {
   color: var(--text-secondary);
+  font-size: 12px;
+  margin: 0;
+}
+
+.recent-kb {
+  margin-bottom: 24px;
+}
+
+.kb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kb-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.kb-item:hover {
+  background: rgba(79, 70, 229, 0.05);
+}
+
+.kb-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--primary-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.kb-info {
+  flex: 1;
+}
+
+.kb-name {
   font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
-.system-info :deep(.el-descriptions__label) {
-  color: var(--text-secondary) !important;
-  background: rgba(255, 255, 255, 0.03) !important;
+.kb-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
 }
 
-.system-info :deep(.el-descriptions__content) {
-  color: var(--text-primary) !important;
-  background: transparent !important;
+.kb-arrow {
+  color: var(--text-secondary);
 }
 </style>

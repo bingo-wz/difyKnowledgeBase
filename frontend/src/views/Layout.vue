@@ -38,6 +38,13 @@
           <h2>{{ currentTitle }}</h2>
         </div>
         <div class="header-actions">
+          <!-- 主题切换 -->
+          <div class="theme-toggle" @click="toggleTheme" :title="isDark ? '切换亮色模式' : '切换暗色模式'">
+            <el-icon :size="20">
+              <Sunny v-if="isDark" />
+              <Moon v-else />
+            </el-icon>
+          </div>
           <el-button :icon="Refresh" circle @click="refresh" />
         </div>
       </el-header>
@@ -56,10 +63,12 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Refresh } from '@element-plus/icons-vue'
+import { Refresh, Sunny, Moon } from '@element-plus/icons-vue'
+import { useAppStore } from '@/stores/app'
 
 const route = useRoute()
 const router = useRouter()
+const appStore = useAppStore()
 
 const activeMenu = computed(() => {
   return route.path
@@ -68,6 +77,12 @@ const activeMenu = computed(() => {
 const currentTitle = computed(() => {
   return route.meta?.title || 'AI知识库'
 })
+
+const isDark = computed(() => appStore.theme === 'dark')
+
+const toggleTheme = () => {
+  appStore.toggleTheme()
+}
 
 const refresh = () => {
   router.go(0)
@@ -84,6 +99,7 @@ const refresh = () => {
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border-color);
+  transition: background-color 0.3s;
 }
 
 .logo {
@@ -131,6 +147,7 @@ const refresh = () => {
   padding: 0 24px;
   background: var(--bg-sidebar);
   border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s;
 }
 
 .header-title h2 {
@@ -139,9 +156,32 @@ const refresh = () => {
   color: var(--text-primary);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.theme-toggle:hover {
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--primary-color);
+}
+
 .main-content {
   background: var(--bg-dark);
   padding: 24px;
   overflow-y: auto;
+  transition: background-color 0.3s;
 }
 </style>
