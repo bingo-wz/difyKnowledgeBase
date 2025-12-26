@@ -76,7 +76,9 @@
               :placeholder="selectedKb ? '输入你的问题...' : '请先选择知识库'"
               :disabled="!selectedKb || loading"
               size="large"
-              @keyup.enter="sendMessage"
+              @keydown.enter="handleEnter"
+              @compositionstart="isComposing = true"
+              @compositionend="isComposing = false"
             >
               <template #append>
                 <el-button
@@ -110,6 +112,16 @@ const messages = ref([])
 const inputMessage = ref('')
 const loading = ref(false)
 const messageListRef = ref(null)
+const isComposing = ref(false) // 输入法组合状态
+
+// 处理回车键 - 只有在非输入法组合状态下才发送
+const handleEnter = (e) => {
+  if (isComposing.value) {
+    return // 输入法正在组合，不发送
+  }
+  e.preventDefault()
+  sendMessage()
+}
 
 const fetchKnowledgeBases = async () => {
   try {
