@@ -211,9 +211,10 @@ const deleteSession = async (session) => {
   }
 }
 
-// 处理回车键
+// 处理回车键 - 使用keyCode 229检测输入法状态
 const handleEnter = (e) => {
-  if (isComposing.value) return
+  // keyCode 229 表示输入法正在处理按键
+  if (e.keyCode === 229 || e.isComposing || isComposing.value) return
   e.preventDefault()
   sendMessage()
 }
@@ -330,6 +331,12 @@ onMounted(() => {
 
 .kb-selector .el-select {
   width: 100%;
+}
+
+/* 深色模式下select输入框样式 */
+.kb-selector :deep(.el-input__wrapper) {
+  background-color: #1e1e32 !important;
+  box-shadow: none !important;
 }
 
 .session-list {

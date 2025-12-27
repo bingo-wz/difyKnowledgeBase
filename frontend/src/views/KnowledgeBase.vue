@@ -68,9 +68,13 @@
       width="500"
       :close-on-click-modal="false"
     >
-      <el-form :model="createForm" label-width="80px" :rules="rules" ref="formRef">
+      <el-form :model="createForm" label-width="80px" :rules="rules" ref="formRef" @submit.prevent>
         <el-form-item label="名称" prop="name">
-          <el-input v-model="createForm.name" placeholder="请输入知识库名称" />
+          <el-input 
+            v-model="createForm.name" 
+            placeholder="请输入知识库名称"
+            @keydown.enter.prevent
+          />
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input
@@ -268,10 +272,9 @@ onMounted(() => {
   font-size: 13px;
   color: var(--text-secondary);
   margin-bottom: 12px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .kb-meta {

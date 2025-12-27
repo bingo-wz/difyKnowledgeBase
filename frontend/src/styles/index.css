@@ -129,7 +129,13 @@ body {
 }
 
 .el-table--enable-row-hover .el-table__body tr:hover>td {
-  background: rgba(79, 70, 229, 0.05) !important;
+  background: rgba(79, 70, 229, 0.15) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 深色主题下表格hover行样式 */
+[data-theme="dark"] .el-table--enable-row-hover .el-table__body tr:hover>td {
+  background: rgba(79, 70, 229, 0.25) !important;
 }
 
 .el-dialog {
@@ -145,6 +151,71 @@ body {
 
 .el-dialog__body {
   color: var(--text-secondary) !important;
+}
+
+/* Textarea样式 */
+.el-textarea__inner {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Select下拉框样式 - 深色模式适配 */
+[data-theme="dark"] .el-select .el-input__wrapper {
+  background-color: #1e1e32 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="dark"] .el-select-dropdown {
+  background-color: #252540 !important;
+  border: 1px solid #3a3a5c !important;
+}
+
+[data-theme="dark"] .el-select-dropdown__item {
+  color: #e0e0e8 !important;
+  background: transparent !important;
+}
+
+[data-theme="dark"] .el-select-dropdown__item:hover,
+[data-theme="dark"] .el-select-dropdown__item.hover {
+  background: rgba(79, 70, 229, 0.25) !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .el-select-dropdown__item.selected {
+  color: var(--primary-color) !important;
+  background: rgba(79, 70, 229, 0.15) !important;
+}
+
+/* 深色模式下所有输入框背景 */
+[data-theme="dark"] .el-input__wrapper {
+  background-color: #1e1e32 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="dark"] .el-input__inner {
+  background-color: transparent !important;
+  color: #e0e0e8 !important;
+}
+
+[data-theme="dark"] .el-textarea__inner {
+  background-color: #1e1e32 !important;
+  color: #e0e0e8 !important;
+}
+
+/* 默认按钮样式 - 深色模式适配 */
+[data-theme="dark"] .el-button--default,
+[data-theme="dark"] .el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info) {
+  background: #252540 !important;
+  border-color: #3a3a5c !important;
+  color: #e0e0e8 !important;
+}
+
+[data-theme="dark"] .el-button--default:hover,
+[data-theme="dark"] .el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):hover {
+  background: #2a2a4a !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
 }
 
 .el-tag {
@@ -165,6 +236,12 @@ body {
 [data-theme="dark"] .el-tag--warning {
   background-color: rgba(245, 158, 11, 0.15) !important;
   color: #fbbf24 !important;
+}
+
+[data-theme="dark"] .el-tag--info,
+[data-theme="dark"] .el-tag {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #a5b4fc !important;
 }
 
 /* 文本按钮基础优化 - 仅处理颜色 */
