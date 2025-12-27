@@ -33,6 +33,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 配置CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // 允许同源iframe加载（用于PDF预览）
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 // 暂时放开所有接口（开发阶段）
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll());

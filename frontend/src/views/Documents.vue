@@ -44,8 +44,17 @@
             {{ formatTime(row.createTime) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
+            <el-button
+              type="primary"
+              :icon="View"
+              size="small"
+              text
+              @click="handlePreview(row)"
+            >
+              预览
+            </el-button>
             <el-button
               type="danger"
               :icon="Delete"
@@ -91,6 +100,37 @@
         </template>
       </el-upload>
     </el-dialog>
+
+    <!-- 文档预览弹窗 -->
+    <el-dialog
+      v-model="showPreviewDialog"
+      :title="previewingDoc?.filename || '文档预览'"
+      width="900"
+      destroy-on-close
+    >
+      <div class="preview-container">
+        <!-- 图片预览 -->
+        <template v-if="isImage(previewingDoc?.fileType)">
+          <img :src="getPreviewUrl(previewingDoc)" class="preview-image" />
+        </template>
+        <!-- PDF预览 -->
+        <template v-else-if="previewingDoc?.fileType === 'pdf'">
+          <iframe :src="getPreviewUrl(previewingDoc)" class="preview-iframe"></iframe>
+        </template>
+        <!-- 视频预览 -->
+        <template v-else-if="isVideo(previewingDoc?.fileType)">
+          <video :src="getPreviewUrl(previewingDoc)" controls class="preview-video"></video>
+        </template>
+        <!-- 其他类型显示提示 -->
+        <template v-else>
+          <div class="preview-unsupported">
+            <el-icon :size="64"><Document /></el-icon>
+            <p>暂不支持预览此类型文件</p>
+            <p class="file-info">文件类型: {{ previewingDoc?.fileType?.toUpperCase() }}</p>
+          </div>
+        </template>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -98,7 +138,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Upload, Delete, Document, UploadFilled } from '@element-plus/icons-vue'
+import { Upload, Delete, Document, UploadFilled, View } from '@element-plus/icons-vue'
 import { deleteDocument, getDocumentList } from '@/api/document'
 import { getKnowledgeBaseList } from '@/api/knowledge'
 
@@ -110,6 +150,29 @@ const knowledgeBase = ref(null)
 const documents = ref([])
 const loading = ref(false)
 const showUploadDialog = ref(false)
+
+// 预览相关
+const showPreviewDialog = ref(false)
+const previewingDoc = ref(null)
+
+const handlePreview = (doc) => {
+  previewingDoc.value = doc
+  showPreviewDialog.value = true
+}
+
+const isImage = (type) => {
+  return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'].includes(type?.toLowerCase())
+}
+
+const isVideo = (type) => {
+  return ['mp4', 'webm', 'ogg', 'mov'].includes(type?.toLowerCase())
+}
+
+const getPreviewUrl = (doc) => {
+  if (!doc?.id) return ''
+  // 拼接预览URL
+  return `/api/document/preview/${doc.id}`
+}
 
 const uploadUrl = '/api/document/upload'
 const uploadHeaders = {}
@@ -276,5 +339,47 @@ onMounted(() => {
   font-size: 48px;
   color: var(--primary-color);
   margin-bottom: 16px;
+}
+
+/* 文档预览样式 */
+.preview-container {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 600px;
+  border-radius: 8px;
+}
+
+.preview-iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+  border-radius: 8px;
+}
+
+.preview-video {
+  max-width: 100%;
+  max-height: 500px;
+  border-radius: 8px;
+}
+
+.preview-unsupported {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.preview-unsupported p {
+  margin: 16px 0 8px;
+}
+
+.preview-unsupported .file-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+  opacity: 0.7;
 }
 </style>

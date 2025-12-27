@@ -115,4 +115,39 @@ public class DocumentController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/preview/{id}")
+    @Operation(summary = "预览文档", description = "获取文档内容用于预览")
+    public ResponseEntity<byte[]> previewDocument(@PathVariable Long id) {
+        log.info("预览文档: id={}", id);
+
+        try {
+            Document doc = difyService.getDocumentById(id);
+            if (doc == null || doc.getMinioObjectName() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // 从MinIO获取文件内容
+            byte[] content = difyService.getMinioService().getFileBytes(doc.getMinioObjectName());
+
+            String contentType = switch (doc.getFileType().toLowerCase()) {
+                case "pdf" -> "application/pdf";
+                case "png" -> "image/png";
+                case "jpg", "jpeg" -> "image/jpeg";
+                case "gif" -> "image/gif";
+                case "webp" -> "image/webp";
+                case "mp4" -> "video/mp4";
+                case "webm" -> "video/webm";
+                default -> "application/octet-stream";
+            };
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", contentType)
+                    .header("Content-Disposition", "inline; filename=\"" + doc.getFilename() + "\"")
+                    .body(content);
+        } catch (Exception e) {
+            log.error("预览文档失败", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

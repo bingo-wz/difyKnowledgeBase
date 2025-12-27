@@ -41,6 +41,13 @@ public class DifyService {
     }
 
     /**
+     * 获取MinioService
+     */
+    public MinioService getMinioService() {
+        return minioService;
+    }
+
+    /**
      * 根据知识库ID获取文档列表
      */
     public List<Document> getDocumentsByKbId(Long kbId) {
@@ -48,6 +55,13 @@ public class DifyService {
                 new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Document>()
                         .eq(Document::getKbId, kbId)
                         .orderByDesc(Document::getCreateTime));
+    }
+
+    /**
+     * 根据ID获取文档
+     */
+    public Document getDocumentById(Long id) {
+        return documentMapper.selectById(id);
     }
 
     /**

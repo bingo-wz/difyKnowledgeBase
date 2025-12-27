@@ -18,8 +18,8 @@ public interface ChatMessageMapper extends BaseMapper<ChatMessage> {
     int countTotal();
 
     /**
-     * 统计会话消息数
+     * 统计会话中AI回复数量
      */
-    @Select("SELECT COUNT(*) FROM chat_message WHERE session_id = #{sessionId}")
+    @Select("SELECT COUNT(*) FROM chat_message WHERE session_id = #{sessionId} AND role = 'assistant'")
     int countBySessionId(Long sessionId);
 }

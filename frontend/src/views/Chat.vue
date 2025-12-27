@@ -33,7 +33,7 @@
             <el-icon><ChatDotRound /></el-icon>
             <div class="session-info">
               <div class="session-title">{{ session.title }}</div>
-              <div class="session-meta">{{ session.messageCount || 0 }} 条消息</div>
+              <div class="session-meta">{{ session.messageCount || 0 }} 条回复</div>
             </div>
             <el-icon class="delete-btn" @click.stop="deleteSession(session)"><Delete /></el-icon>
           </div>
@@ -65,9 +65,10 @@
               <div class="message-text">{{ msg.content }}</div>
               <div v-if="msg.sources && msg.sources.length > 0" class="message-sources">
                 <div class="sources-title">来源引用：</div>
-                <div v-for="(source, i) in msg.sources" :key="i" class="source-item">
+                <div v-for="(source, i) in msg.sources" :key="i" class="source-item" @click="previewSource(source)">
                   <el-icon><Document /></el-icon>
                   <span>{{ source.documentName }}</span>
+                  <el-icon class="preview-icon"><View /></el-icon>
                 </div>
               </div>
             </div>
@@ -114,12 +115,30 @@
         </div>
       </div>
     </div>
+
+    <!-- 来源切片预览弹窗 -->
+    <el-dialog
+      v-model="showSourcePreview"
+      :title="previewingSource?.documentName || '来源预览'"
+      width="700"
+      destroy-on-close
+    >
+      <div class="source-preview-content">
+        <div class="preview-section">
+          <div class="preview-label">匹配片段内容：</div>
+          <div class="preview-text">{{ previewingSource?.content || '暂无内容' }}</div>
+        </div>
+        <div class="preview-meta" v-if="previewingSource?.score">
+          <el-tag size="small" type="primary">匹配度: {{ (previewingSource.score * 100).toFixed(1) }}%</el-tag>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, nextTick, watch } from 'vue'
-import { Plus, Folder, ChatDotRound, Document, Promotion, Delete } from '@element-plus/icons-vue'
+import { Plus, Folder, ChatDotRound, Document, Promotion, Delete, View } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getKnowledgeBaseList } from '@/api/knowledge'
 import { ragChat, getSessionList, createSession, deleteSession as deleteSessionApi, getSessionMessages } from '@/api/chat'
@@ -133,6 +152,16 @@ const inputMessage = ref('')
 const loading = ref(false)
 const messageListRef = ref(null)
 const isComposing = ref(false)
+
+// 来源预览相关
+const showSourcePreview = ref(false)
+const previewingSource = ref(null)
+
+// 预览来源切片
+const previewSource = (source) => {
+  previewingSource.value = source
+  showSourcePreview.value = true
+}
 
 // 获取知识库列表
 const fetchKnowledgeBases = async () => {
@@ -534,5 +563,58 @@ onMounted(() => {
 
 .input-wrapper :deep(.el-input-group__append .el-button) {
   border-radius: 8px !important;
+}
+
+/* 来源引用点击样式 */
+.source-item {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.source-item:hover {
+  color: var(--primary-color);
+  background: rgba(79, 70, 229, 0.1);
+}
+
+.source-item .preview-icon {
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.source-item:hover .preview-icon {
+  opacity: 1;
+}
+
+/* 来源预览弹窗样式 */
+.source-preview-content {
+  padding: 8px 0;
+}
+
+.preview-section {
+  margin-bottom: 16px;
+}
+
+.preview-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.preview-text {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  line-height: 1.8;
+  font-size: 14px;
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.preview-meta {
+  display: flex;
+  gap: 8px;
 }
 </style>
