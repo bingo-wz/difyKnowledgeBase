@@ -1,25 +1,43 @@
 <template>
   <div class="chat-page">
     <div class="chat-container">
-      <!-- 左侧知识库选择 -->
+      <!-- 左侧会话列表 -->
       <div class="chat-sidebar">
         <div class="sidebar-header">
-          <h3>选择知识库</h3>
+          <h3>对话历史</h3>
+          <el-button type="primary" size="small" :icon="Plus" @click="startNewChat">
+            新对话
+          </el-button>
         </div>
-        <div class="kb-list">
+        
+        <!-- 知识库选择 -->
+        <div class="kb-selector">
+          <el-select v-model="selectedKbId" placeholder="选择知识库" size="small" clearable>
+            <el-option
+              v-for="kb in knowledgeBases"
+              :key="kb.id"
+              :label="kb.name"
+              :value="kb.id"
+            />
+          </el-select>
+        </div>
+
+        <!-- 历史会话列表 -->
+        <div class="session-list">
           <div
-            v-for="kb in knowledgeBases"
-            :key="kb.id"
-            :class="['kb-item', { active: selectedKb?.id === kb.id }]"
-            @click="selectKb(kb)"
+            v-for="session in sessions"
+            :key="session.id"
+            :class="['session-item', { active: currentSession?.id === session.id }]"
+            @click="selectSession(session)"
           >
-            <el-icon><Folder /></el-icon>
-            <div class="kb-item-info">
-              <div class="kb-item-name">{{ kb.name }}</div>
-              <div class="kb-item-count">{{ kb.docCount || 0 }} 文档</div>
+            <el-icon><ChatDotRound /></el-icon>
+            <div class="session-info">
+              <div class="session-title">{{ session.title }}</div>
+              <div class="session-meta">{{ session.messageCount || 0 }} 条消息</div>
             </div>
+            <el-icon class="delete-btn" @click.stop="deleteSession(session)"><Delete /></el-icon>
           </div>
-          <el-empty v-if="knowledgeBases.length === 0" description="暂无知识库" :image-size="60" />
+          <el-empty v-if="sessions.length === 0" description="暂无历史对话" :image-size="60" />
         </div>
       </div>
 
@@ -30,7 +48,7 @@
           <div v-if="messages.length === 0" class="welcome-message">
             <el-icon :size="64"><ChatDotRound /></el-icon>
             <h2>AI 知识库问答</h2>
-            <p>选择一个知识库，开始智能问答</p>
+            <p>{{ selectedKbId ? '开始提问吧' : '请先选择一个知识库' }}</p>
           </div>
           
           <div
@@ -73,8 +91,8 @@
           <div class="input-wrapper">
             <el-input
               v-model="inputMessage"
-              :placeholder="selectedKb ? '输入你的问题...' : '请先选择知识库'"
-              :disabled="!selectedKb || loading"
+              :placeholder="selectedKbId ? '输入你的问题...' : '请先选择知识库'"
+              :disabled="!selectedKbId || loading"
               size="large"
               @keydown.enter="handleEnter"
               @compositionstart="isComposing = true"
@@ -85,7 +103,7 @@
                   type="primary"
                   :icon="Promotion"
                   :loading="loading"
-                  :disabled="!selectedKb || !inputMessage.trim()"
+                  :disabled="!selectedKbId || !inputMessage.trim()"
                   @click="sendMessage"
                 >
                   发送
@@ -100,29 +118,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
-import { Folder, ChatDotRound, Document, Promotion } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ref, onMounted, nextTick, watch } from 'vue'
+import { Plus, Folder, ChatDotRound, Document, Promotion, Delete } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { getKnowledgeBaseList } from '@/api/knowledge'
-import { ragChat } from '@/api/chat'
+import { ragChat, getSessionList, createSession, deleteSession as deleteSessionApi, getSessionMessages } from '@/api/chat'
 
 const knowledgeBases = ref([])
-const selectedKb = ref(null)
+const selectedKbId = ref(null)
+const sessions = ref([])
+const currentSession = ref(null)
 const messages = ref([])
 const inputMessage = ref('')
 const loading = ref(false)
 const messageListRef = ref(null)
-const isComposing = ref(false) // 输入法组合状态
+const isComposing = ref(false)
 
-// 处理回车键 - 只有在非输入法组合状态下才发送
-const handleEnter = (e) => {
-  if (isComposing.value) {
-    return // 输入法正在组合，不发送
-  }
-  e.preventDefault()
-  sendMessage()
-}
-
+// 获取知识库列表
 const fetchKnowledgeBases = async () => {
   try {
     const res = await getKnowledgeBaseList({ pageNum: 1, pageSize: 100 })
@@ -134,18 +146,86 @@ const fetchKnowledgeBases = async () => {
   }
 }
 
-const selectKb = (kb) => {
-  selectedKb.value = kb
+// 获取会话列表
+const fetchSessions = async () => {
+  try {
+    const res = await getSessionList()
+    if (res.success) {
+      sessions.value = res.data?.records || []
+    }
+  } catch (e) {
+    console.error('获取会话列表失败', e)
+  }
+}
+
+// 选择会话
+const selectSession = async (session) => {
+  currentSession.value = session
+  // 从会话中获取知识库ID
+  if (session.kbIds) {
+    selectedKbId.value = parseInt(session.kbIds)
+  }
+  
+  // 加载会话消息
+  try {
+    const res = await getSessionMessages(session.id)
+    if (res.success) {
+      messages.value = (res.data?.records || []).map(m => ({
+        role: m.role,
+        content: m.content,
+        sources: m.sources ? JSON.parse(m.sources) : null
+      }))
+      scrollToBottom()
+    }
+  } catch (e) {
+    console.error('获取会话消息失败', e)
+  }
+}
+
+// 开始新对话
+const startNewChat = () => {
+  currentSession.value = null
   messages.value = []
 }
 
+// 删除会话
+const deleteSession = async (session) => {
+  try {
+    await ElMessageBox.confirm('确定要删除这个对话吗？', '删除确认', { type: 'warning' })
+    
+    await deleteSessionApi(session.id)
+    ElMessage.success('删除成功')
+    
+    // 刷新列表
+    await fetchSessions()
+    
+    // 如果删除的是当前会话
+    if (currentSession.value?.id === session.id) {
+      currentSession.value = null
+      messages.value = []
+    }
+  } catch (e) {
+    if (e !== 'cancel') {
+      ElMessage.error('删除失败')
+    }
+  }
+}
+
+// 处理回车键
+const handleEnter = (e) => {
+  if (isComposing.value) return
+  e.preventDefault()
+  sendMessage()
+}
+
+// 发送消息
 const sendMessage = async () => {
-  if (!selectedKb.value || !inputMessage.value.trim() || loading.value) return
+  if (!selectedKbId.value || !inputMessage.value.trim() || loading.value) return
 
   const userMessage = inputMessage.value.trim()
   inputMessage.value = ''
 
-  // 添加用户消息
+  // 添加用户消息到界面
   messages.value.push({
     role: 'user',
     content: userMessage
@@ -156,12 +236,20 @@ const sendMessage = async () => {
 
   try {
     const res = await ragChat({
-      kbId: selectedKb.value.id,
+      kbId: selectedKbId.value,
+      sessionId: currentSession.value?.id,
       query: userMessage,
       topK: 5
     })
 
     if (res.success) {
+      // 更新当前会话ID
+      if (!currentSession.value && res.data.sessionId) {
+        currentSession.value = { id: res.data.sessionId }
+        // 刷新会话列表
+        await fetchSessions()
+      }
+
       messages.value.push({
         role: 'assistant',
         content: res.data.answer,
@@ -196,6 +284,7 @@ const scrollToBottom = () => {
 
 onMounted(() => {
   fetchKnowledgeBases()
+  fetchSessions()
 })
 </script>
 
@@ -221,8 +310,11 @@ onMounted(() => {
 }
 
 .sidebar-header {
-  padding: 16px 20px;
+  padding: 16px;
   border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .sidebar-header h3 {
@@ -231,13 +323,22 @@ onMounted(() => {
   color: var(--text-primary);
 }
 
-.kb-list {
+.kb-selector {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.kb-selector .el-select {
+  width: 100%;
+}
+
+.session-list {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
 }
 
-.kb-item {
+.session-item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -248,29 +349,29 @@ onMounted(() => {
   margin-bottom: 8px;
 }
 
-.kb-item:hover {
+.session-item:hover {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.kb-item.active {
+.session-item.active {
   background: var(--primary-gradient);
 }
 
-.kb-item .el-icon {
-  font-size: 24px;
-  color: var(--primary-color);
+.session-item .el-icon {
+  font-size: 20px;
+  color: var(--text-secondary);
 }
 
-.kb-item.active .el-icon {
+.session-item.active .el-icon {
   color: white;
 }
 
-.kb-item-info {
+.session-info {
   flex: 1;
   min-width: 0;
 }
 
-.kb-item-name {
+.session-title {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
@@ -279,15 +380,29 @@ onMounted(() => {
   text-overflow: ellipsis;
 }
 
-.kb-item-count {
+.session-meta {
   font-size: 12px;
   color: var(--text-secondary);
   margin-top: 2px;
 }
 
-.kb-item.active .kb-item-name,
-.kb-item.active .kb-item-count {
+.session-item.active .session-title,
+.session-item.active .session-meta {
   color: white;
+}
+
+.delete-btn {
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: var(--text-secondary);
+}
+
+.session-item:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  color: #ef4444;
 }
 
 .chat-main {
@@ -335,6 +450,7 @@ onMounted(() => {
   border-radius: 12px;
   line-height: 1.6;
   font-size: 14px;
+  white-space: pre-wrap;
 }
 
 .message.user .message-text {

@@ -206,6 +206,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { getKnowledgeBaseList } from '@/api/knowledge'
+import { getChatStats } from '@/api/chat'
 import { ArrowRight, Folder, Monitor, Cpu, Link } from '@element-plus/icons-vue'
 
 const stats = ref({
@@ -235,7 +236,6 @@ const checkServiceStatus = async () => {
   }
   
   // 简化检查，假设其他服务与后端同步
-  // 实际项目中可以添加专门的健康检查接口
   systemStatus.dify = systemStatus.backend
   systemStatus.minio = systemStatus.backend
   systemStatus.mysql = systemStatus.backend
@@ -247,7 +247,7 @@ onMounted(async () => {
   // 检查服务状态
   await checkServiceStatus()
   
-  // 获取统计数据
+  // 获取知识库统计数据
   try {
     const res = await getKnowledgeBaseList({ pageNum: 1, pageSize: 100 })
     if (res.success) {
@@ -257,7 +257,17 @@ onMounted(async () => {
       recentKnowledgeBases.value = records.slice(0, 4)
     }
   } catch (e) {
-    console.error('获取统计数据失败', e)
+    console.error('获取知识库数据失败', e)
+  }
+
+  // 获取对话统计数据
+  try {
+    const res = await getChatStats()
+    if (res.success) {
+      stats.value.chatCount = res.data?.sessionCount || 0
+    }
+  } catch (e) {
+    console.error('获取对话统计失败', e)
   }
 })
 </script>
